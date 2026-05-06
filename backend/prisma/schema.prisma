@@ -1,0 +1,142 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  TEACHER
+  STUDENT
+  PARENT
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+}
+
+enum FeeType {
+  DEPOSIT
+  WITHDRAWAL
+}
+
+model User {
+  id               String   @id @default(cuid())
+  name             String
+  email            String   @unique
+  passwordHash     String
+  role             Role
+  deviceId         String
+  isDeviceVerified Boolean  @default(false)
+  createdAt        DateTime @default(now())
+
+  student          Student?
+  parent           Parent?
+  teacher          Teacher?
+  notifications    Notification[]
+}
+
+model Student {
+  id              String   @id @default(cuid())
+  admissionNumber String   @unique
+
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  classId         String?
+  class           Class?   @relation(fields: [classId], references: [id])
+
+  parentId        String?
+  parent          Parent?  @relation(fields: [parentId], references: [id])
+
+  grades          Grade[]
+  attendance      Attendance[]
+  feePayments     FeePayment[]
+}
+
+model Parent {
+  id       String    @id @default(cuid())
+  userId   String    @unique
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  children Student[]
+}
+
+model Teacher {
+  id      String  @id @default(cuid())
+  userId  String  @unique
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  classes Class[]
+}
+
+model Class {
+  id        String     @id @default(cuid())
+  name      String     @unique
+
+  teacherId String?
+  teacher   Teacher?   @relation(fields: [teacherId], references: [id])
+
+  students  Student[]
+  schedules Schedule[]
+}
+
+model Schedule {
+  id        String @id @default(cuid())
+  classId   String
+  class     Class  @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  subject   String
+  dayOfWeek Int
+  startTime String
+  endTime   String
+}
+
+model Grade {
+  id        String   @id @default(cuid())
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  subject   String
+  score     Float
+  term      String
+  updatedBy String
+  updatedAt DateTime @updatedAt
+}
+
+model Attendance {
+  id        String           @id @default(cuid())
+  studentId String
+  student   Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  date      DateTime
+  status    AttendanceStatus
+
+  @@unique([studentId, date])
+}
+
+model FeePayment {
+  id        String   @id @default(cuid())
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  amount    Int
+  type      FeeType
+  balance   Int
+  note      String?
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
