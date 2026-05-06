@@ -44,6 +44,8 @@ export default function Navbar() {
           <NavItem to="/dashboard" label="Dashboard" />
           <NavItem to="/users" label="Users" />
           <NavItem to="/classes" label="Classes" />
+          <NavItem to="/students" label="Students" />
+          <NavItem to="/teachers" label="Teachers" />
         </nav>
 
         <div className="flex items-center gap-3">

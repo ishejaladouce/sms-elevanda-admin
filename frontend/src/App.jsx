@@ -4,6 +4,8 @@ import LoginPage from "./pages/LoginPage.jsx";
 import DashboardPage from "./pages/DashboardPage.jsx";
 import UsersPage from "./pages/UsersPage.jsx";
 import ClassesPage from "./pages/ClassesPage.jsx";
+import StudentsPage from "./pages/StudentsPage.jsx";
+import TeachersPage from "./pages/TeachersPage.jsx";
 
 export default function App() {
   return (
@@ -15,6 +17,8 @@ export default function App() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/users" element={<UsersPage />} />
         <Route path="/classes" element={<ClassesPage />} />
+        <Route path="/students" element={<StudentsPage />} />
+        <Route path="/teachers" element={<TeachersPage />} />
         <Route path="*" element={<div className="p-6">Not found</div>} />
       </Routes>
     </div>
