@@ -46,6 +46,7 @@ export const getTeachers = asyncHandler(async (req, res) => {
     userId: t.userId,
     name: t.user?.name,
     email: t.user?.email,
+    classes: (t.classes || []).map((c) => ({ id: c.id, name: c.name })),
   }));
   return ok(res, "Teachers", { items: safe });
 });

@@ -14,6 +14,7 @@ export const swaggerSpec = {
     "/api/admin/users/{id}/verify-device": { patch: { summary: "Verify user device (admin only)", responses: { 200: { description: "OK" } } } },
     "/api/admin/dashboard/stats": { get: { summary: "Admin dashboard stats", responses: { 200: { description: "OK" } } } },
     "/api/admin/teachers": { get: { summary: "List teachers (admin only)", responses: { 200: { description: "OK" } } } },
+    "/api/admin/students": { get: { summary: "List students (admin only)", responses: { 200: { description: "OK" } } } },
     "/api/admin/classes": {
       get: { summary: "List classes (admin only)", responses: { 200: { description: "OK" } } },
       post: { summary: "Create class (admin only)", responses: { 201: { description: "Created" } } }

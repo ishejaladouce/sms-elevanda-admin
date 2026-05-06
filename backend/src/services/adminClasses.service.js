@@ -33,7 +33,7 @@ export async function deleteClass(classId) {
 export async function listTeachers() {
   return prisma.teacher.findMany({
     orderBy: { id: "desc" },
-    include: { user: true },
+    include: { user: true, classes: true },
   });
 }
 
