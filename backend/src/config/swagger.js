@@ -12,6 +12,7 @@ export const swaggerSpec = {
     "/api/auth/logout": { post: { summary: "Logout (clears cookie)", responses: { 200: { description: "OK" } } } },
     "/api/admin/users": { get: { summary: "List all users (admin only)", responses: { 200: { description: "OK" } } } },
     "/api/admin/users/{id}/verify-device": { patch: { summary: "Verify user device (admin only)", responses: { 200: { description: "OK" } } } },
+    "/api/admin/dashboard/stats": { get: { summary: "Admin dashboard stats", responses: { 200: { description: "OK" } } } },
   },
 };
 
