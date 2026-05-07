@@ -9,8 +9,8 @@ export default {
         mono: ["JetBrains Mono", "ui-monospace", "SFMono-Regular", "monospace"],
       },
       borderRadius: {
-        card: "8px",
-        control: "6px",
+        card: "16px",
+        control: "10px",
       },
       colors: {
         bg: "var(--color-bg)",
@@ -18,23 +18,24 @@ export default {
         surface2: "var(--color-surface-2)",
         accent: "var(--color-accent)",
         accentHover: "var(--color-accent-hover)",
+        accentStrong: "var(--color-accent-strong)",
         text: "var(--color-text)",
         muted: "var(--color-text-muted)",
+        subtle: "var(--color-text-subtle)",
         border: "var(--color-border)",
+        borderStrong: "var(--color-border-strong)",
         danger: "var(--color-danger)",
         success: "var(--color-success)",
+        warning: "var(--color-warning)",
       },
       boxShadow: {
-        soft: "0 8px 20px rgba(0,0,0,0.25)",
+        card: "var(--shadow-card)",
+        glow: "var(--shadow-glow)",
       },
       transitionTimingFunction: {
         smooth: "cubic-bezier(0.4, 0, 0.2, 1)",
-      },
-      transitionDuration: {
-        200: "200ms",
       },
     },
   },
   plugins: [],
 };
-
