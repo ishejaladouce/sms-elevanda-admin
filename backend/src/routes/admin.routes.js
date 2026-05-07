@@ -15,6 +15,8 @@ import {
 } from "../controllers/adminClasses.controller.js";
 import { getStudents } from "../controllers/adminStudents.controller.js";
 import { getFees } from "../controllers/adminFees.controller.js";
+import { getGrades } from "../controllers/adminGrades.controller.js";
+import { getAttendance } from "../controllers/adminAttendance.controller.js";
 
 const router = express.Router();
 
@@ -28,6 +30,8 @@ router.get("/dashboard/stats", getStats);
 router.get("/teachers", getTeachers);
 router.get("/students", getStudents);
 router.get("/fees", getFees);
+router.get("/grades", getGrades);
+router.get("/attendance", getAttendance);
 router.get("/classes", getClasses);
 router.post("/classes", validateBody(createClassSchema), postClass);
 router.patch("/classes/:id", validateBody(updateClassSchema), patchClass);

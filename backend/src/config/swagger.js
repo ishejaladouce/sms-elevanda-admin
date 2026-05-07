@@ -16,6 +16,8 @@ export const swaggerSpec = {
     "/api/admin/teachers": { get: { summary: "List teachers (admin only)", responses: { 200: { description: "OK" } } } },
     "/api/admin/students": { get: { summary: "List students (admin only)", responses: { 200: { description: "OK" } } } },
     "/api/admin/fees": { get: { summary: "List fee payments (admin only)", responses: { 200: { description: "OK" } } } },
+    "/api/admin/grades": { get: { summary: "List grades (admin only)", responses: { 200: { description: "OK" } } } },
+    "/api/admin/attendance": { get: { summary: "List attendance (admin only)", responses: { 200: { description: "OK" } } } },
     "/api/admin/classes": {
       get: { summary: "List classes (admin only)", responses: { 200: { description: "OK" } } },
       post: { summary: "Create class (admin only)", responses: { 201: { description: "Created" } } }
