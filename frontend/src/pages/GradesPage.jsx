@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import PageHeader from "../components/layout/PageHeader.jsx";
 import Card from "../components/ui/Card.jsx";
 import Table from "../components/ui/Table.jsx";
 import Badge from "../components/ui/Badge.jsx";
@@ -55,46 +56,111 @@ export default function GradesPage() {
 
   const columns = useMemo(
     () => [
-      { key: "updatedAt", header: "Updated", render: (r) => <span className="text-sm">{formatDateTime(r.updatedAt)}</span> },
-      { key: "term", header: "Term", render: (r) => <span className="font-mono">{r.term}</span> },
+      {
+        key: "updatedAt",
+        header: "Updated",
+        render: (r) => <span className="text-xs text-muted">{formatDateTime(r.updatedAt)}</span>,
+      },
+      {
+        key: "term",
+        header: "Term",
+        render: (r) => <span className="font-mono text-xs">{r.term}</span>,
+      },
       { key: "subject", header: "Subject" },
       { key: "score", header: "Score", render: (r) => scoreBadge(r.score) },
-      { key: "admissionNumber", header: "Adm No", render: (r) => <span className="font-mono">{r.admissionNumber}</span> },
+      {
+        key: "admissionNumber",
+        header: "Adm No",
+        render: (r) => <span className="font-mono text-xs">{r.admissionNumber}</span>,
+      },
       { key: "studentName", header: "Student" },
-      { key: "className", header: "Class", render: (r) => r.className || <span className="text-muted">—</span> },
-      { key: "updatedBy", header: "Updated By", render: (r) => <span className="font-mono">{r.updatedBy}</span> },
+      {
+        key: "className",
+        header: "Class",
+        render: (r) => r.className || <span className="text-muted">—</span>,
+      },
+      {
+        key: "updatedBy",
+        header: "Updated by",
+        render: (r) => <span className="font-mono text-xs text-muted">{r.updatedBy}</span>,
+      },
     ],
     []
   );
 
   return (
-    <div className="p-4 md:p-8">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="font-display text-3xl">Grades</h1>
-        <p className="text-muted mt-1">All grades across all students</p>
-
-        {pageError ? <div className="mt-4 text-danger text-sm">{pageError}</div> : null}
-
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-3">
-          <Input label="Term (optional)" value={term} onChange={(e) => setTerm(e.target.value)} placeholder="e.g. Term 1" />
-          <Input label="Subject (optional)" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="e.g. Math" />
-          <Input label="Class ID (optional)" value={classId} onChange={(e) => setClassId(e.target.value)} placeholder="Paste classId" />
-        </div>
-
-        <div className="mt-4 flex items-center justify-between gap-3">
-          <div className="text-muted text-sm">{loading ? "Loading..." : `${items.length} grade(s)`}</div>
-          <div className="flex items-center gap-2">
-            <Button variant="secondary" size="sm" onClick={() => { setTerm(""); setSubject(""); setClassId(""); }}>
-              Clear
+    <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+      <div className="max-w-7xl mx-auto">
+        <PageHeader
+          title="Grades"
+          subtitle="Filter by term, subject, or class to spot patterns fast."
+          pill="Academic results"
+          action={
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={loadGrades}
+              disabled={loading}
+            >
+              {loading ? "Refreshing" : "Refresh"}
             </Button>
-            <Button size="sm" onClick={loadGrades} disabled={loading}>
-              Apply
-            </Button>
+          }
+        />
+
+        {pageError ? (
+          <div className="mb-6 rounded-control bg-danger/10 ring-1 ring-danger/30 px-4 py-3 text-danger text-sm fade-up">
+            {pageError}
           </div>
+        ) : null}
+
+        <div className="fade-up fade-up-delay-1 mb-4">
+          <Card title="Filters" subtitle="Narrow the list to what matters">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <Input
+                label="Term (optional)"
+                value={term}
+                onChange={(e) => setTerm(e.target.value)}
+                placeholder="e.g. Term 1"
+              />
+              <Input
+                label="Subject (optional)"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                placeholder="e.g. Math"
+              />
+              <Input
+                label="Class ID (optional)"
+                value={classId}
+                onChange={(e) => setClassId(e.target.value)}
+                placeholder="Paste classId"
+              />
+            </div>
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+              <div className="text-muted text-xs">
+                {loading ? "Loading…" : `${items.length} grade(s) found`}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    setTerm("");
+                    setSubject("");
+                    setClassId("");
+                  }}
+                >
+                  Clear
+                </Button>
+                <Button size="sm" onClick={loadGrades} disabled={loading}>
+                  Apply
+                </Button>
+              </div>
+            </div>
+          </Card>
         </div>
 
-        <div className="mt-3">
-          <Card>
+        <div className="fade-up fade-up-delay-2">
+          <Card title="All grades" subtitle="Newest first">
             <Table columns={columns} rows={items} rowKey={(r) => r.id} />
           </Card>
         </div>
@@ -102,4 +168,3 @@ export default function GradesPage() {
     </div>
   );
 }
-

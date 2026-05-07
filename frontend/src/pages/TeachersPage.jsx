@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import PageHeader from "../components/layout/PageHeader.jsx";
 import Card from "../components/ui/Card.jsx";
 import Button from "../components/ui/Button.jsx";
 import Table from "../components/ui/Table.jsx";
@@ -29,20 +30,33 @@ export default function TeachersPage() {
 
   const columns = useMemo(
     () => [
-      { key: "name", header: "Name" },
-      { key: "email", header: "Email", render: (r) => (r.email ? <span className="font-mono">{r.email}</span> : "—") },
+      {
+        key: "name",
+        header: "Name",
+        render: (r) => <span className="text-text">{r.name || "—"}</span>,
+      },
+      {
+        key: "email",
+        header: "Email",
+        render: (r) =>
+          r.email ? (
+            <span className="font-mono text-xs">{r.email}</span>
+          ) : (
+            <span className="text-muted">—</span>
+          ),
+      },
       {
         key: "classes",
         header: "Assigned classes",
         render: (r) =>
           r.classes?.length ? (
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex gap-1.5 flex-wrap">
               {r.classes.map((c) => (
                 <Badge key={c.id}>{c.name}</Badge>
               ))}
             </div>
           ) : (
-            <span className="text-muted">—</span>
+            <span className="text-muted text-xs">No classes yet</span>
           ),
       },
     ],
@@ -50,22 +64,35 @@ export default function TeachersPage() {
   );
 
   return (
-    <div className="p-4 md:p-8">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="font-display text-3xl">Teachers</h1>
-        <p className="text-muted mt-1">All teachers</p>
+    <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+      <div className="max-w-7xl mx-auto">
+        <PageHeader
+          title="Teachers"
+          subtitle="The people guiding every classroom."
+          pill="Staff directory"
+          action={
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={loadTeachers}
+              disabled={loading}
+            >
+              {loading ? "Refreshing" : "Refresh"}
+            </Button>
+          }
+        />
 
-        {pageError ? <div className="mt-4 text-danger text-sm">{pageError}</div> : null}
+        {pageError ? (
+          <div className="mb-6 rounded-control bg-danger/10 ring-1 ring-danger/30 px-4 py-3 text-danger text-sm fade-up">
+            {pageError}
+          </div>
+        ) : null}
 
-        <div className="mt-6 flex items-center justify-between gap-3">
-          <div className="text-muted text-sm">{loading ? "Loading..." : `${teachers.length} teacher(s)`}</div>
-          <Button variant="secondary" size="sm" onClick={loadTeachers} disabled={loading}>
-            Refresh
-          </Button>
-        </div>
-
-        <div className="mt-3">
-          <Card>
+        <div className="fade-up fade-up-delay-1">
+          <Card
+            title="All teachers"
+            subtitle={loading ? "Loading…" : `${teachers.length} total`}
+          >
             <Table columns={columns} rows={teachers} rowKey={(r) => r.id} />
           </Card>
         </div>
@@ -73,4 +100,3 @@ export default function TeachersPage() {
     </div>
   );
 }
-

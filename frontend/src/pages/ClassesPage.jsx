@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import PageHeader from "../components/layout/PageHeader.jsx";
 import Card from "../components/ui/Card.jsx";
 import Button from "../components/ui/Button.jsx";
 import Input from "../components/ui/Input.jsx";
@@ -9,6 +10,26 @@ import { api } from "../services/api.js";
 function teacherLabel(t) {
   if (!t) return "Unassigned";
   return t.user?.name || t.user?.email || t.id;
+}
+
+// Reusable themed select element so it matches our inputs.
+function Select({ label, value, onChange, children }) {
+  return (
+    <div className="w-full">
+      {label ? (
+        <label className="block text-xs font-medium text-muted mb-2 tracking-wide uppercase">
+          {label}
+        </label>
+      ) : null}
+      <select
+        value={value}
+        onChange={onChange}
+        className="w-full h-12 px-4 rounded-control bg-surface ring-1 ring-border hover:ring-borderStrong focus:ring-2 focus:ring-accent/60 outline-none transition-all duration-200 ease-smooth text-text"
+      >
+        {children}
+      </select>
+    </div>
+  );
 }
 
 export default function ClassesPage() {
@@ -52,7 +73,10 @@ export default function ClassesPage() {
     }
     setPageError("");
     try {
-      await api.post("/api/admin/classes", { name: newName.trim(), teacherId: newTeacherId || undefined });
+      await api.post("/api/admin/classes", {
+        name: newName.trim(),
+        teacherId: newTeacherId || undefined,
+      });
     } catch (err) {
       setPageError(err?.response?.data?.message || "Failed to create class");
       return;
@@ -113,7 +137,11 @@ export default function ClassesPage() {
         key: "teacher",
         header: "Teacher",
         render: (r) =>
-          r.teacher ? <span className="text-muted">{teacherLabel(r.teacher)}</span> : <Badge>Unassigned</Badge>,
+          r.teacher ? (
+            <span className="text-text">{teacherLabel(r.teacher)}</span>
+          ) : (
+            <Badge>Unassigned</Badge>
+          ),
       },
       {
         key: "actions",
@@ -151,43 +179,69 @@ export default function ClassesPage() {
         ...c,
         name: (
           <div className="min-w-[180px]">
-            <Input label="" value={editName} onChange={(e) => setEditName(e.target.value)} />
+            <Input
+              label=""
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+            />
           </div>
         ),
         teacher: (
-          <select
-            className="w-full min-w-[220px] rounded-control border border-border bg-surface2 px-3 py-2 outline-none focus:ring-2 focus:ring-accent/40 transition duration-200 ease-smooth"
-            value={editTeacherId}
-            onChange={(e) => setEditTeacherId(e.target.value)}
-          >
-            <option value="">Unassigned</option>
-            {teachers.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name || t.email || t.id}
-              </option>
-            ))}
-          </select>
+          <div className="min-w-[220px]">
+            <Select
+              value={editTeacherId}
+              onChange={(e) => setEditTeacherId(e.target.value)}
+            >
+              <option value="">Unassigned</option>
+              {teachers.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name || t.email || t.id}
+                </option>
+              ))}
+            </Select>
+          </div>
         ),
       };
     });
   }, [classes, editingId, editName, editTeacherId, teachers]);
 
   return (
-    <div className="p-4 md:p-8">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="font-display text-3xl">Classes</h1>
-        <p className="text-muted mt-1">Create classes and assign teachers</p>
+    <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+      <div className="max-w-7xl mx-auto">
+        <PageHeader
+          title="Classes"
+          subtitle="Create classes, assign teachers, and keep schedules tidy."
+          pill="Class management"
+          action={
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={loadData}
+              disabled={loading}
+            >
+              {loading ? "Refreshing" : "Refresh"}
+            </Button>
+          }
+        />
 
-        {pageError ? <div className="mt-4 text-danger text-sm">{pageError}</div> : null}
+        {pageError ? (
+          <div className="mb-6 rounded-control bg-danger/10 ring-1 ring-danger/30 px-4 py-3 text-danger text-sm fade-up">
+            {pageError}
+          </div>
+        ) : null}
 
-        <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <Card title="Create class" className="lg:col-span-1">
-            <div className="space-y-3">
-              <Input label="Class name" value={newName} onChange={(e) => setNewName(e.target.value)} />
-              <div>
-                <label className="text-sm text-muted">Teacher (optional)</label>
-                <select
-                  className="mt-1 w-full rounded-control border border-border bg-surface2 px-3 py-2 outline-none focus:ring-2 focus:ring-accent/40 transition duration-200 ease-smooth"
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
+          <div className="fade-up fade-up-delay-1">
+            <Card title="Create class" subtitle="Add a new class to the school">
+              <div className="space-y-4">
+                <Input
+                  label="Class name"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  placeholder="e.g. Senior 3 - Sciences"
+                />
+                <Select
+                  label="Teacher (optional)"
                   value={newTeacherId}
                   onChange={(e) => setNewTeacherId(e.target.value)}
                 >
@@ -197,28 +251,24 @@ export default function ClassesPage() {
                       {t.name || t.email || t.id}
                     </option>
                   ))}
-                </select>
+                </Select>
+                <Button onClick={createClass} disabled={loading} className="w-full">
+                  Create class
+                </Button>
               </div>
-              <Button onClick={createClass} disabled={loading}>
-                Create
-              </Button>
-            </div>
-          </Card>
+            </Card>
+          </div>
 
-          <Card title="All classes" className="lg:col-span-2">
-            <div className="flex items-center justify-between gap-3">
-              <div className="text-muted text-sm">{loading ? "Loading..." : `${classes.length} class(es)`}</div>
-              <Button variant="secondary" size="sm" onClick={loadData} disabled={loading}>
-                Refresh
-              </Button>
-            </div>
-            <div className="mt-3">
+          <div className="lg:col-span-2 fade-up fade-up-delay-2">
+            <Card
+              title="All classes"
+              subtitle={loading ? "Loading…" : `${classes.length} total`}
+            >
               <Table columns={columns} rows={rows} rowKey={(r) => r.id} />
-            </div>
-          </Card>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
   );
 }
-
