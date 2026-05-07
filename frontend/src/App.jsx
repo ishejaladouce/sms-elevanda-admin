@@ -6,6 +6,7 @@ import UsersPage from "./pages/UsersPage.jsx";
 import ClassesPage from "./pages/ClassesPage.jsx";
 import StudentsPage from "./pages/StudentsPage.jsx";
 import TeachersPage from "./pages/TeachersPage.jsx";
+import FeesPage from "./pages/FeesPage.jsx";
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
         <Route path="/classes" element={<ClassesPage />} />
         <Route path="/students" element={<StudentsPage />} />
         <Route path="/teachers" element={<TeachersPage />} />
+        <Route path="/fees" element={<FeesPage />} />
         <Route path="*" element={<div className="p-6">Not found</div>} />
       </Routes>
     </div>
