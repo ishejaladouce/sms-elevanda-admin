@@ -1,4 +1,4 @@
-import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,50 +8,53 @@ import ThemeToggle from "../components/ui/ThemeToggle.jsx";
 import Logo from "../components/brand/Logo.jsx";
 import { api } from "../services/api.js";
 import { deviceId } from "../utils/device.js";
-import { useAuthStore } from "../store/authStore.js";
-import { useCountUp } from "../hooks/useCountUp.js";
 
 const schema = z.object({
+  name: z.string().min(2, "Enter your full name"),
   email: z.string().email("Enter a valid email"),
-  password: z.string().min(1, "Password is required"),
+  password: z.string().min(6, "At least 6 characters"),
+  role: z.enum(["TEACHER", "ADMIN"]),
 });
 
-// Updates the page-wide spotlight position so it follows the cursor.
+// Page-level spotlight follows the cursor.
 function handleMouseMove(e) {
-  const target = e.currentTarget;
-  const rect = target.getBoundingClientRect();
-  target.style.setProperty("--mx", `${e.clientX - rect.left}px`);
-  target.style.setProperty("--my", `${e.clientY - rect.top}px`);
+  const rect = e.currentTarget.getBoundingClientRect();
+  e.currentTarget.style.setProperty("--mx", `${e.clientX - rect.left}px`);
+  e.currentTarget.style.setProperty("--my", `${e.clientY - rect.top}px`);
 }
 
-// Updates a single tile's spotlight position.
+// Per-tile spotlight follows the cursor inside one card.
 function handleTileMouseMove(e) {
   const rect = e.currentTarget.getBoundingClientRect();
   e.currentTarget.style.setProperty("--mx", `${e.clientX - rect.left}px`);
   e.currentTarget.style.setProperty("--my", `${e.clientY - rect.top}px`);
 }
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const nav = useNavigate();
-  const location = useLocation();
-  const flashNotice = location.state?.notice;
-  const setUser = useAuthStore((s) => s.setUser);
   const form = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { email: "", password: "" },
+    defaultValues: { name: "", email: "", password: "", role: "TEACHER" },
   });
+
+  const role = form.watch("role");
 
   async function onSubmit(values) {
     try {
       form.clearErrors("root");
-      const res = await api.post("/api/auth/login", {
+      await api.post("/api/auth/register", {
         ...values,
         deviceId: deviceId(),
       });
-      setUser(res.data?.data?.user ?? null);
-      nav("/dashboard");
+      // After registering, the device is unverified — admin must verify before login.
+      nav("/login", {
+        state: {
+          notice:
+            "Account created. An existing admin will verify your device before you can sign in.",
+        },
+      });
     } catch (err) {
-      const message = err?.response?.data?.message || "Login failed";
+      const message = err?.response?.data?.message || "Could not create account";
       form.setError("root", { type: "server", message });
     }
   }
@@ -61,7 +64,7 @@ export default function LoginPage() {
       onMouseMove={handleMouseMove}
       className="min-h-screen relative overflow-hidden bg-bg text-text flex flex-col"
     >
-      {/* Background atmosphere: aurora blobs, grid pattern, grain, mouse spotlight */}
+      {/* Background atmosphere */}
       <div className="pointer-events-none absolute inset-0">
         <div
           className="aurora-blob absolute -top-40 -left-20 h-[520px] w-[520px] rounded-full opacity-30 blur-3xl"
@@ -69,7 +72,10 @@ export default function LoginPage() {
         />
         <div
           className="aurora-blob absolute top-1/3 -right-32 h-[460px] w-[460px] rounded-full opacity-20 blur-3xl"
-          style={{ background: "radial-gradient(circle, var(--color-accent-strong), transparent 60%)", animationDelay: "-8s" }}
+          style={{
+            background: "radial-gradient(circle, var(--color-accent-strong), transparent 60%)",
+            animationDelay: "-8s",
+          }}
         />
         <div className="absolute inset-0 bg-grid opacity-[0.5]" />
         <div className="grain-overlay" />
@@ -83,126 +89,90 @@ export default function LoginPage() {
           <div className="flex items-center gap-2">
             <span className="hidden sm:inline-flex items-center gap-2 rounded-full bg-surface ring-1 ring-border px-3 py-1.5 text-xs text-muted">
               <span className="status-dot h-1.5 w-1.5 rounded-full bg-accent" />
-              Staff portal
+              Staff sign-up
             </span>
             <ThemeToggle size="sm" />
           </div>
         </div>
       </header>
 
-      {/* Split content: hero left, form right */}
+      {/* Split content */}
       <div className="relative z-10 flex-1 px-5 sm:px-8 lg:px-12 pb-10 lg:pb-12 pt-8 lg:pt-12">
         <div className="lg:grid lg:grid-cols-[1.2fr_1fr] lg:gap-12 xl:gap-16 max-w-7xl mx-auto h-full">
-          {/* LEFT — content + bento metrics */}
+          {/* LEFT — content + 3-step bento */}
           <aside className="flex flex-col justify-center gap-8 lg:gap-10 mb-10 lg:mb-0">
             <div className="space-y-5">
               <div className="inline-flex items-center gap-2 rounded-full bg-surface ring-1 ring-border px-3 py-1 text-xs text-muted fade-up">
                 <span className="status-dot h-1.5 w-1.5 rounded-full bg-accent" />
-                Operations control room
+                For teachers and administrators
               </div>
 
               <h1
                 className="font-display tracking-tighter leading-[1.02] text-text fade-up fade-up-delay-1"
                 style={{ fontSize: "clamp(2.5rem, 6vw, 5.5rem)" }}
               >
-                Run the school,{" "}
-                <span className="text-gradient italic">at a glance.</span>
+                Join the team that{" "}
+                <span className="text-gradient italic">runs the school.</span>
               </h1>
 
               <p className="text-muted text-base sm:text-lg max-w-[52ch] fade-up fade-up-delay-2">
-                Verify devices, manage classes, and watch fees, attendance and
-                grades flow in real time. One quiet console for every moving
-                part of your school.
+                Create your staff account in a minute. An existing admin will
+                verify your device, then you'll have everything you need to
+                manage your classes, students and records.
               </p>
             </div>
 
-            {/* Bento metric tiles */}
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 max-w-2xl">
-              <div onMouseMove={handleTileMouseMove} className="tile p-5 fade-up fade-up-delay-3">
-                <div className="text-[11px] uppercase tracking-wider text-muted">
-                  Students
-                </div>
-                <CountStat value={1284} className="mt-2 text-3xl sm:text-4xl font-semibold text-text tabular-nums" />
-                <MiniBars />
-              </div>
-
-              <div onMouseMove={handleTileMouseMove} className="tile p-5 fade-up fade-up-delay-4">
-                <div className="text-[11px] uppercase tracking-wider text-muted">
-                  Fees collected
-                </div>
-                <div className="mt-2 text-3xl sm:text-4xl font-semibold text-text tabular-nums">
-                  <CountStat value={42} suffix="M" />
-                  <span className="text-base text-muted ml-1.5 align-middle">RWF</span>
-                </div>
-                <div className="mt-3 h-1.5 rounded-full bg-surface2 overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-accent to-accentHover"
-                    style={{ width: "78%" }}
-                  />
-                </div>
-                <div className="mt-2 text-[11px] text-muted">78% of term target</div>
-              </div>
-
-              <div onMouseMove={handleTileMouseMove} className="tile p-5 fade-up fade-up-delay-5">
-                <div className="text-[11px] uppercase tracking-wider text-muted">
-                  Attendance today
-                </div>
-                <div className="mt-3 flex items-center gap-3">
-                  <RingChart percent={94} />
-                  <div>
-                    <div className="text-text text-2xl font-semibold tabular-nums">
-                      94<span className="text-muted text-base">%</span>
-                    </div>
-                    <div className="text-[11px] text-muted">Across 32 classes</div>
-                  </div>
-                </div>
-              </div>
-
-              <div onMouseMove={handleTileMouseMove} className="tile p-5 fade-up fade-up-delay-6">
-                <div className="text-[11px] uppercase tracking-wider text-muted">
-                  Pending verifications
-                </div>
-                <CountStat value={7} className="mt-2 text-3xl sm:text-4xl font-semibold text-text tabular-nums" />
-                <div className="mt-3 flex items-center gap-2 text-[11px] text-muted">
-                  <span className="inline-flex items-center gap-1.5">
-                    <span className="status-dot h-1.5 w-1.5 rounded-full bg-warning" />
-                    Awaiting your action
-                  </span>
-                </div>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 max-w-2xl">
+              <StepTile
+                step="01"
+                title="Fill your details"
+                body="Name, work email, password and role."
+                delay="fade-up-delay-3"
+              />
+              <StepTile
+                step="02"
+                title="Get verified"
+                body="An admin reviews and verifies your device."
+                delay="fade-up-delay-4"
+              />
+              <StepTile
+                step="03"
+                title="You're in"
+                body="Sign in and run things at a glance."
+                delay="fade-up-delay-5"
+              />
             </div>
           </aside>
 
-          {/* RIGHT — sign-in card */}
+          {/* RIGHT — register card */}
           <main className="flex items-center">
             <div className="w-full max-w-md mx-auto lg:mx-0 lg:ml-auto fade-up fade-up-delay-2">
               <div className="relative">
-                {/* Subtle accent gradient hairline on top */}
                 <div className="absolute -top-px left-6 right-6 h-px bg-gradient-to-r from-transparent via-accent/60 to-transparent" />
                 <div className="glass rounded-2xl p-7 sm:p-8 shadow-card">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-[11px] uppercase tracking-wider text-muted">
-                      Welcome back
+                      Create staff account
                     </span>
                   </div>
                   <h2 className="font-display text-2xl sm:text-[28px] tracking-tight text-text">
-                    Sign in to continue
+                    Get started
                   </h2>
                   <p className="text-muted text-sm mt-1.5">
-                    Verified staff devices only. Sessions clear when the
-                    browser closes.
+                    A device check keeps things safe. Verification is quick.
                   </p>
-
-                  {flashNotice ? (
-                    <div className="mt-5 rounded-control bg-success/10 ring-1 ring-success/30 px-3 py-2.5 text-success text-xs">
-                      {flashNotice}
-                    </div>
-                  ) : null}
 
                   <form
                     onSubmit={form.handleSubmit(onSubmit)}
                     className="mt-6 space-y-4"
                   >
+                    <Input
+                      label="Full name"
+                      placeholder="e.g. Aline U."
+                      icon={<UserIcon />}
+                      error={form.formState.errors.name?.message}
+                      {...form.register("name")}
+                    />
                     <Input
                       label="Work email"
                       type="email"
@@ -214,11 +184,38 @@ export default function LoginPage() {
                     <Input
                       label="Password"
                       type="password"
-                      placeholder="Enter your password"
+                      placeholder="At least 6 characters"
                       icon={<LockIcon />}
                       error={form.formState.errors.password?.message}
                       {...form.register("password")}
                     />
+
+                    <div>
+                      <span className="block text-xs font-medium text-muted mb-2 tracking-wide uppercase">
+                        I am a
+                      </span>
+                      <div className="grid grid-cols-2 gap-2">
+                        <RoleOption
+                          label="Teacher"
+                          description="Update grades & attendance"
+                          active={role === "TEACHER"}
+                          onClick={() =>
+                            form.setValue("role", "TEACHER", { shouldValidate: true })
+                          }
+                          icon={<CapIcon />}
+                        />
+                        <RoleOption
+                          label="Admin"
+                          description="Run the whole school"
+                          active={role === "ADMIN"}
+                          onClick={() =>
+                            form.setValue("role", "ADMIN", { shouldValidate: true })
+                          }
+                          icon={<ShieldIcon />}
+                        />
+                      </div>
+                      <input type="hidden" {...form.register("role")} />
+                    </div>
 
                     {form.formState.errors.root?.message ? (
                       <div className="rounded-control bg-danger/10 ring-1 ring-danger/30 px-3 py-2.5 text-danger text-xs">
@@ -232,7 +229,7 @@ export default function LoginPage() {
                       className="w-full"
                       size="lg"
                     >
-                      Sign in
+                      Create account
                     </Button>
                   </form>
 
@@ -248,14 +245,13 @@ export default function LoginPage() {
                 </div>
 
                 <p className="text-center text-xs text-muted mt-5">
-                  New here?{" "}
+                  Already have an account?{" "}
                   <Link
-                    to="/register"
+                    to="/login"
                     className="text-accent hover:underline underline-offset-4"
                   >
-                    Create a staff account
+                    Sign in
                   </Link>
-                  . An admin will verify your device.
                 </p>
               </div>
             </div>
@@ -264,62 +260,61 @@ export default function LoginPage() {
       </div>
     </div>
   );
+
+  function StepTile({ step, title, body, delay }) {
+    return (
+      <div
+        onMouseMove={handleTileMouseMove}
+        className={`tile p-5 fade-up ${delay}`}
+      >
+        <div className="text-[11px] uppercase tracking-wider text-muted">
+          Step {step}
+        </div>
+        <div className="mt-2 text-text font-medium">{title}</div>
+        <div className="mt-1 text-xs text-muted leading-relaxed">{body}</div>
+      </div>
+    );
+  }
 }
 
-// Animated counter for stat tiles.
-function CountStat({ value, suffix = "", className = "" }) {
-  const v = useCountUp(value, { duration: 1400, delay: 250 });
+function RoleOption({ label, description, active, onClick, icon }) {
   return (
-    <span className={className}>
-      {Math.round(v).toLocaleString()}
-      {suffix}
-    </span>
+    <button
+      type="button"
+      onClick={onClick}
+      className={[
+        "text-left rounded-control p-3.5 transition-all duration-200 ease-smooth",
+        "ring-1",
+        active
+          ? "ring-accent bg-accent/5"
+          : "ring-border bg-surface hover:ring-borderStrong hover:bg-surface2",
+      ].join(" ")}
+    >
+      <div className="flex items-start gap-2.5">
+        <span
+          className={[
+            "h-7 w-7 rounded-full inline-flex items-center justify-center flex-shrink-0",
+            active ? "bg-accent text-bg" : "bg-surface2 text-muted",
+          ].join(" ")}
+        >
+          {icon}
+        </span>
+        <div className="min-w-0">
+          <div className="text-sm font-medium text-text">{label}</div>
+          <div className="text-[11px] text-muted leading-snug mt-0.5">
+            {description}
+          </div>
+        </div>
+      </div>
+    </button>
   );
 }
 
-// Small animated bar chart used in the Students tile.
-function MiniBars() {
-  const bars = [38, 56, 44, 72, 60, 84, 70];
+function UserIcon() {
   return (
-    <div className="mt-3 flex items-end gap-1 h-10">
-      {bars.map((h, i) => (
-        <div
-          key={i}
-          className="flex-1 rounded-sm bg-gradient-to-t from-accent/30 to-accent bar-grow"
-          style={{ "--h": h / 100, animationDelay: `${300 + i * 60}ms`, height: `${h}%` }}
-        />
-      ))}
-    </div>
-  );
-}
-
-// Animated ring chart for attendance percentage.
-function RingChart({ percent = 0 }) {
-  const radius = 22;
-  const circ = 2 * Math.PI * radius;
-  const off = circ - (percent / 100) * circ;
-  return (
-    <svg width="56" height="56" viewBox="0 0 56 56" className="rotate-[-90deg]">
-      <circle
-        cx="28"
-        cy="28"
-        r={radius}
-        stroke="var(--color-border-strong)"
-        strokeWidth="5"
-        fill="none"
-      />
-      <circle
-        cx="28"
-        cy="28"
-        r={radius}
-        stroke="var(--color-accent)"
-        strokeWidth="5"
-        fill="none"
-        strokeLinecap="round"
-        strokeDasharray={circ}
-        style={{ "--circ": circ, "--off": off }}
-        className="ring-anim"
-      />
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
     </svg>
   );
 }
@@ -338,6 +333,23 @@ function LockIcon() {
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
       <rect x="4" y="11" width="16" height="10" rx="2" />
       <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+    </svg>
+  );
+}
+
+function CapIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 10 12 5 2 10l10 5 10-5z" />
+      <path d="M6 12v5c0 1.5 3 3 6 3s6-1.5 6-3v-5" />
+    </svg>
+  );
+}
+
+function ShieldIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
     </svg>
   );
 }
