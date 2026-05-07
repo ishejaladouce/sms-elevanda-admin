@@ -111,11 +111,9 @@ node scripts/reset-password.cjs email@example.com <newPassword>
 - The database schema is shared with the client app for consistency.
 - Sessions are handled with JWT stored in **httpOnly cookies**.
 - Password hashing uses **SHA-512** (as required by the test).
- - Basic security is enabled: Helmet headers + rate limiting + Zod validation on request bodies.
+- Basic security is enabled: Helmet headers + rate limiting + Zod validation on request bodies.
 
-
-
-curity notes (what is enforced)
+## Security notes (what is enforced)
 - Passwords are hashed with **SHA-512 + salt**
 - JWT is stored in an **httpOnly cookie** (not localStorage)
 - **Helmet** is enabled
