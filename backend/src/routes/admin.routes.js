@@ -14,6 +14,7 @@ import {
   updateClassSchema,
 } from "../controllers/adminClasses.controller.js";
 import { getStudents } from "../controllers/adminStudents.controller.js";
+import { getFees } from "../controllers/adminFees.controller.js";
 
 const router = express.Router();
 
@@ -26,6 +27,7 @@ router.get("/dashboard/stats", getStats);
 
 router.get("/teachers", getTeachers);
 router.get("/students", getStudents);
+router.get("/fees", getFees);
 router.get("/classes", getClasses);
 router.post("/classes", validateBody(createClassSchema), postClass);
 router.patch("/classes/:id", validateBody(updateClassSchema), patchClass);
