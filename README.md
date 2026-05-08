@@ -70,25 +70,20 @@ npx prisma studio
 This repository does **not** ship with a seed script. For demo data, you can create users/classes using the UI and Prisma Studio.
 
 ## Important login rule (device verification)
-Login will fail with **403** until the user’s device is verified.
+Login will fail with **403** until the user’s device is verified (`isDeviceVerified`).
+
+**Strict device ID** (production-style): do **not** set `RELAX_DEVICE_MATCH`, or set it to `false`. The browser’s device id must match the value stored in the database (same site URL, including port).
+
+**Local testing (recommended while you develop):** In `backend/.env` set:
+
+`RELAX_DEVICE_MATCH=true`
+
+Then **only** `isDeviceVerified` must be true. If the browser id does not match what is in the DB, the API **updates** `deviceId` on successful login so changing Vite ports does not break you. **Turn this off** for a demo that should behave like production.
 
 The backend checks:
-- **deviceId must match** the browser Device ID
-- **isDeviceVerified must be true**
-
-### If you see "Device mismatch" (same browser, "same" ID in Prisma)
-
-1. **Same URL every time:** The admin app saves the device ID in **browser localStorage per origin**. `http://localhost:5174` and `http://localhost:5175` are **two different origins** — each gets its **own** ID. Always open the admin UI on the **same** host and **port** (and match `CLIENT_URL` in `backend/.env` to that origin).
-
-2. **Copy the ID from the login page** you actually use, then set `User.deviceId` in Prisma Studio to that exact string (no extra spaces or line breaks).
-
-3. **One database:** Client and admin backends often share the same `DATABASE_URL`. Run **Prisma Studio** from the **`backend/` folder of the API you are actually using** open `http://localhost:5001` so you edit the same database row the login request hits.
-
-4. **Use the script (reliable):** From `admin/backend` run  
-   `node scripts/set-device.cjs your@email.com <pasteDeviceIdFromLoginPage>`  
-   It trims whitespace and sets `isDeviceVerified` to true.
-
-5. **Development mode:** If `NODE_ENV=development`, a failed login response may include `data` with `storedLength` / `incomingLength` — if lengths differ, the DB value is not the string the browser sent.
+- **Password** correct  
+- **isDeviceVerified** true  
+- **deviceId** matches **unless** `RELAX_DEVICE_MATCH=true`
 
 ## Helpful scripts (backend)
 Run scripts from `backend/`:

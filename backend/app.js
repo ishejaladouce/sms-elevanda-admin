@@ -1,5 +1,5 @@
+import "./load-env.js";
 import express from "express";
-import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
@@ -9,8 +9,6 @@ import { apiRateLimiter } from "./src/middlewares/rateLimit.middleware.js";
 import authRoutes from "./src/routes/auth.routes.js";
 import adminRoutes from "./src/routes/admin.routes.js";
 import { swaggerSpec } from "./src/config/swagger.js";
-
-dotenv.config();
 
 export const app = express();
 
