@@ -76,6 +76,14 @@ The backend checks:
 - **deviceId must match** the browser Device ID
 - **isDeviceVerified must be true**
 
+### If you see "Device mismatch" (same browser, "same" ID in Prisma)
+
+1. **Same URL every time:** The admin app saves the device ID in **browser localStorage per origin**. `http://localhost:5174` and `http://localhost:5175` are **two different origins** — each gets its **own** ID. Always open the admin UI on the **same** host and **port** (and match `CLIENT_URL` in `backend/.env` to that origin).
+
+2. **Copy the ID from the login page** you actually use, then set `User.deviceId` in Prisma Studio to that exact string (no extra spaces or line breaks).
+
+3. After editing in Prisma Studio, confirm `deviceId` in the table matches the login page character-for-character.
+
 ## Helpful scripts (backend)
 Run scripts from `backend/`:
 

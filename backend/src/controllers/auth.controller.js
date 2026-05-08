@@ -6,18 +6,19 @@ import { toUserSafeDto } from "../dtos/user.dto.js";
 import { ROLES } from "../models/constants.js";
 import { loginStaff, registerStaff } from "../services/auth.service.js";
 
+// deviceId is trimmed so DB values pasted from Prisma Studio still match the browser.
 export const registerSchema = z.object({
   name: z.string().min(2),
   email: z.string().email(),
   password: z.string().min(6),
   role: z.enum([ROLES.ADMIN, ROLES.TEACHER]),
-  deviceId: z.string().min(3),
+  deviceId: z.string().min(3).transform((s) => s.trim()),
 });
 
 export const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
-  deviceId: z.string().min(3),
+  deviceId: z.string().min(3).transform((s) => s.trim()),
 });
 
 export const register = asyncHandler(async (req, res) => {
