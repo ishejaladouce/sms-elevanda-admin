@@ -66,6 +66,13 @@ body {
   transition: background-color 300ms ease;
 }
 
+/* Native select dropdowns: ensure readable text in light/dark. */
+select,
+option {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+}
+
 * {
   scrollbar-color: var(--color-border-strong) transparent;
 }
