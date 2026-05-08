@@ -8,32 +8,34 @@ import swaggerUi from "swagger-ui-express";
 import { apiRateLimiter } from "./src/middlewares/rateLimit.middleware.js";
 import authRoutes from "./src/routes/auth.routes.js";
 import adminRoutes from "./src/routes/admin.routes.js";
+import teacherRoutes from "./src/routes/teacher.routes.js";
 import { swaggerSpec } from "./src/config/swagger.js";
 
 export const app = express();
 
 app.use(helmet());
+
+const corsOptions = {
+  origin: (origin, cb) => {
+    const allowed = [
+      process.env.CLIENT_URL,
+      "http://localhost:5174",
+      "http://localhost:5175",
+    ].filter(Boolean);
+
+    if (!origin) return cb(null, true);
+    if (allowed.includes(origin)) return cb(null, true);
+    return cb(null, false);
+  },
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+app.options(/.*/, cors(corsOptions));
+
 app.use(apiRateLimiter);
 app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser());
-
-app.use(
-  cors({
-    origin: (origin, cb) => {
-      const allowed = [
-        process.env.CLIENT_URL,
-        "http://localhost:5174",
-        "http://localhost:5175",
-      ].filter(Boolean);
-
-      if (!origin) return cb(null, true);
-      if (allowed.includes(origin)) return cb(null, true);
-
-      return cb(new Error(`CORS blocked origin: ${origin}`));
-    },
-    credentials: true,
-  })
-);
 
 app.get("/api/health", (req, res) => {
   return res.json({ success: true, message: "OK", data: null });
@@ -58,6 +60,7 @@ const swaggerUiOptions = {
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerUiOptions));
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/teacher", teacherRoutes);
 
 app.use((req, res) => {
   return res.status(404).json({ success: false, message: "Not found", data: null });

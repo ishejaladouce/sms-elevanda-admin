@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -35,12 +35,33 @@ export default function LoginPage() {
   const nav = useNavigate();
   const location = useLocation();
   const flashNotice = location.state?.notice;
+  const [notice, setNotice] = useState("");
   const [deviceMismatchHint, setDeviceMismatchHint] = useState(null);
   const setUser = useAuthStore((s) => s.setUser);
   const form = useForm({
     resolver: zodResolver(schema),
     defaultValues: { email: "", password: "" },
   });
+
+  useEffect(() => {
+    const incoming = typeof flashNotice === "string" ? flashNotice : "";
+    if (incoming) {
+      setNotice(incoming);
+      try {
+        sessionStorage.setItem("sms_admin_flash_notice", incoming);
+      } catch {
+        // ignore
+      }
+      nav(location.pathname, { replace: true, state: {} });
+      return;
+    }
+    try {
+      const stored = sessionStorage.getItem("sms_admin_flash_notice");
+      if (stored) setNotice(stored);
+    } catch {
+      // ignore
+    }
+  }, [flashNotice, location.pathname, nav]);
 
   async function onSubmit(values) {
     try {
@@ -170,9 +191,28 @@ export default function LoginPage() {
                     browser closes.
                   </p>
 
-                  {flashNotice ? (
-                    <div className="mt-5 rounded-control bg-success/10 ring-1 ring-success/30 px-3 py-2.5 text-success text-xs">
-                      {flashNotice}
+                  {notice ? (
+                    <div className="mt-5 rounded-control bg-success/10 ring-1 ring-success/30 px-4 py-3 text-success text-sm flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="text-[11px] uppercase tracking-wider text-success/80">
+                          Success
+                        </div>
+                        <div className="mt-1">{notice}</div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNotice("");
+                          try {
+                            sessionStorage.removeItem("sms_admin_flash_notice");
+                          } catch {
+                            // ignore
+                          }
+                        }}
+                        className="flex-shrink-0 text-xs text-success/80 hover:text-success underline underline-offset-4"
+                      >
+                        Dismiss
+                      </button>
                     </div>
                   ) : null}
 

@@ -5,6 +5,7 @@ import { signToken, setAuthCookie, clearAuthCookie } from "../utils/jwt.js";
 import { toUserSafeDto } from "../dtos/user.dto.js";
 import { ROLES } from "../models/constants.js";
 import { loginStaff, registerStaff } from "../services/auth.service.js";
+import { prisma } from "../config/prisma.js";
 
 // deviceId is trimmed so DB values pasted from Prisma Studio still match the browser.
 export const registerSchema = z.object({
@@ -36,5 +37,12 @@ export const login = asyncHandler(async (req, res) => {
 export const logout = asyncHandler(async (req, res) => {
   clearAuthCookie(res);
   return ok(res, "Logged out", null);
+});
+
+export const me = asyncHandler(async (req, res) => {
+  const userId = req.user?.sub;
+  if (!userId) return ok(res, "Me", { user: null });
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  return ok(res, "Me", { user: user ? toUserSafeDto(user) : null });
 });
 

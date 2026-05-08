@@ -5,6 +5,7 @@ export const apiRateLimiter = rateLimit({
   limit: 100,
   standardHeaders: "draft-8",
   legacyHeaders: false,
+  skip: (req) => req.method === "OPTIONS",
   message: { success: false, message: "Too many requests. Try again later.", data: null },
 });
 

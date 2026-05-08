@@ -11,3 +11,11 @@ export async function listStudents() {
   });
 }
 
+export async function assignStudentToClass(studentId, classId) {
+  return prisma.student.update({
+    where: { id: studentId },
+    data: { classId: classId || null },
+    include: { user: true, class: true, parent: { include: { user: true } } },
+  });
+}
+

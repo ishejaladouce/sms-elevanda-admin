@@ -1,4 +1,4 @@
-import { getAuthCookieName, verifyToken } from "../utils/jwt.js";
+import { getAuthCookieName, refreshAuthCookieIfNeeded, verifyToken } from "../utils/jwt.js";
 
 export function requireAuth(req, res, next) {
   const token = req.cookies?.[getAuthCookieName()];
@@ -9,6 +9,7 @@ export function requireAuth(req, res, next) {
   try {
     const payload = verifyToken(token);
     req.user = payload;
+    refreshAuthCookieIfNeeded(res, payload);
     next();
   } catch {
     return res.status(401).json({ success: false, message: "Unauthorized", data: null });

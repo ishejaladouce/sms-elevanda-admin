@@ -5,8 +5,21 @@ import Button from "../components/ui/Button.jsx";
 import Table from "../components/ui/Table.jsx";
 import { api } from "../services/api.js";
 
+function Select({ value, onChange, children }) {
+  return (
+    <select
+      value={value}
+      onChange={onChange}
+      className="w-full h-10 px-3 rounded-control bg-surface ring-1 ring-border hover:ring-borderStrong focus:ring-2 focus:ring-accent/60 outline-none transition-all duration-200 ease-smooth text-text text-sm"
+    >
+      {children}
+    </select>
+  );
+}
+
 export default function StudentsPage() {
   const [students, setStudents] = useState([]);
+  const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pageError, setPageError] = useState("");
 
@@ -14,8 +27,12 @@ export default function StudentsPage() {
     setLoading(true);
     setPageError("");
     try {
-      const res = await api.get("/api/admin/students");
-      setStudents(res.data?.data?.items ?? []);
+      const [sRes, cRes] = await Promise.all([
+        api.get("/api/admin/students"),
+        api.get("/api/admin/classes"),
+      ]);
+      setStudents(sRes.data?.data?.items ?? []);
+      setClasses(cRes.data?.data?.items ?? []);
     } catch (err) {
       setPageError(err?.response?.data?.message || "Failed to load students");
     } finally {
@@ -43,9 +60,28 @@ export default function StudentsPage() {
         key: "className",
         header: "Class",
         render: (r) => (
-          <span className="text-text">
-            {r.className || <span className="text-muted">Unassigned</span>}
-          </span>
+          <div className="min-w-[220px]">
+            <Select
+              value={r.classId || ""}
+              onChange={async (e) => {
+                const next = e.target.value || null;
+                try {
+                  setPageError("");
+                  await api.patch(`/api/admin/students/${r.id}/class`, { classId: next });
+                  await loadStudents();
+                } catch (err) {
+                  setPageError(err?.response?.data?.message || "Failed to assign class");
+                }
+              }}
+            >
+              <option value="">Unassigned</option>
+              {classes.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </Select>
+          </div>
         ),
       },
       {
@@ -68,7 +104,7 @@ export default function StudentsPage() {
           ),
       },
     ],
-    []
+    [classes]
   );
 
   return (

@@ -12,6 +12,21 @@ export function verifyToken(token) {
   return jwt.verify(token, process.env.JWT_SECRET);
 }
 
+function shouldRefresh(payload) {
+  const refreshEverySec = Number(process.env.JWT_REFRESH_EVERY_SEC || 600);
+  const iatSec = typeof payload?.iat === "number" ? payload.iat : 0;
+  if (!iatSec) return true;
+  const nowSec = Math.floor(Date.now() / 1000);
+  return nowSec - iatSec >= refreshEverySec;
+}
+
+export function refreshAuthCookieIfNeeded(res, payload) {
+  if (!shouldRefresh(payload)) return false;
+  const token = signToken({ sub: payload.sub, role: payload.role, email: payload.email });
+  setAuthCookie(res, token);
+  return true;
+}
+
 export function setAuthCookie(res, token) {
   const isProd = process.env.NODE_ENV === "production";
   res.cookie(COOKIE_NAME, token, {

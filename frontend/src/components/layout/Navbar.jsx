@@ -46,17 +46,26 @@ export default function Navbar() {
     window.location.href = "/login";
   }
 
-  const links = [
-    { to: "/dashboard", label: "Dashboard" },
-    { to: "/users", label: "Users" },
-    { to: "/classes", label: "Classes" },
-    { to: "/students", label: "Students" },
-    { to: "/teachers", label: "Teachers" },
-    { to: "/fees", label: "Fees" },
-    { to: "/grades", label: "Grades" },
-    { to: "/attendance", label: "Attendance" },
-    { to: "/settings", label: "Settings" },
-  ];
+  const links =
+    user?.role === "TEACHER"
+      ? [
+          { to: "/teacher", label: "My classes" },
+          { to: "/teacher/grades", label: "Update grades" },
+          { to: "/teacher/attendance", label: "Mark attendance" },
+          { to: "/settings", label: "Settings" },
+        ]
+      : [
+          { to: "/dashboard", label: "Dashboard" },
+          { to: "/users", label: "Users" },
+          { to: "/classes", label: "Classes" },
+          { to: "/schedules", label: "Schedules" },
+          { to: "/students", label: "Students" },
+          { to: "/teachers", label: "Teachers" },
+          { to: "/fees", label: "Fees" },
+          { to: "/grades", label: "Grades" },
+          { to: "/attendance", label: "Attendance" },
+          { to: "/settings", label: "Settings" },
+        ];
 
   return (
     <header className="sticky top-0 z-30 bg-bg/85 backdrop-blur-md border-b border-border">
