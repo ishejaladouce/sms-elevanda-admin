@@ -2,10 +2,11 @@ require("dotenv").config();
 const { PrismaClient } = require("@prisma/client");
 
 async function main() {
-  const email = process.argv[2];
-  const deviceId = process.argv[3];
+  const email = (process.argv[2] || "").trim();
+  const deviceId = (process.argv[3] || "").trim();
   if (!email || !deviceId) {
     console.log("Usage: node scripts/set-device.cjs <email> <deviceId>");
+    console.log("Tip: Copy the Device ID from the admin login page (no extra spaces).");
     process.exit(1);
   }
 

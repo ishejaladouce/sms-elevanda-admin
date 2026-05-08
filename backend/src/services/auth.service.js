@@ -45,8 +45,19 @@ export async function loginStaff({ email, password, deviceId }) {
   const stored = (user.deviceId ?? "").trim();
   const incoming = (deviceId ?? "").trim();
   if (stored !== incoming) {
-    const err = new Error("Device mismatch. Contact admin.");
+    const err = new Error(
+      "Device mismatch. Use the Device ID from this same browser address, or run set-device in admin/backend."
+    );
     err.status = 403;
+    // In development, help debug port / copy-paste issues without printing full secrets.
+    if (process.env.NODE_ENV === "development") {
+      err.data = {
+        storedLength: stored.length,
+        incomingLength: incoming.length,
+        storedStartsWith: stored.slice(0, 6),
+        incomingStartsWith: incoming.slice(0, 6),
+      };
+    }
     throw err;
   }
 

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -34,6 +35,7 @@ export default function LoginPage() {
   const nav = useNavigate();
   const location = useLocation();
   const flashNotice = location.state?.notice;
+  const [deviceMismatchHint, setDeviceMismatchHint] = useState(null);
   const setUser = useAuthStore((s) => s.setUser);
   const form = useForm({
     resolver: zodResolver(schema),
@@ -43,6 +45,7 @@ export default function LoginPage() {
   async function onSubmit(values) {
     try {
       form.clearErrors("root");
+      setDeviceMismatchHint(null);
       const res = await api.post("/api/auth/login", {
         ...values,
         deviceId: deviceId(),
@@ -52,6 +55,9 @@ export default function LoginPage() {
     } catch (err) {
       const message = err?.response?.data?.message || "Login failed";
       form.setError("root", { type: "server", message });
+      const hint = err?.response?.data?.data;
+      if (hint && typeof hint === "object") setDeviceMismatchHint(hint);
+      else setDeviceMismatchHint(null);
     }
   }
 
@@ -192,8 +198,18 @@ export default function LoginPage() {
                     />
 
                     {form.formState.errors.root?.message ? (
-                      <div className="rounded-control bg-danger/10 ring-1 ring-danger/30 px-3 py-2.5 text-danger text-xs">
-                        {form.formState.errors.root.message}
+                      <div className="rounded-control bg-danger/10 ring-1 ring-danger/30 px-3 py-2.5 text-danger text-xs space-y-2">
+                        <p>{form.formState.errors.root.message}</p>
+                        {deviceMismatchHint ? (
+                          <p className="font-mono text-[10px] text-muted leading-relaxed break-all">
+                            Dev check: stored length {deviceMismatchHint.storedLength}, sent length{" "}
+                            {deviceMismatchHint.incomingLength}; stored starts{" "}
+                            {deviceMismatchHint.storedStartsWith || "?"}, sent starts{" "}
+                            {deviceMismatchHint.incomingStartsWith || "?"}. If lengths differ, the ID
+                            in the database is not the one this page is sending. Use the same site
+                            address (including port) when you copy the Device ID into Prisma.
+                          </p>
+                        ) : null}
                       </div>
                     ) : null}
 
@@ -207,14 +223,24 @@ export default function LoginPage() {
                     </Button>
                   </form>
 
-                  <div className="mt-5 flex items-center justify-center">
-                    <div className="inline-flex items-center gap-2 text-[11px] text-muted bg-surface2/60 ring-1 ring-border rounded-full px-3 py-1.5">
-                      <span className="status-dot h-1.5 w-1.5 rounded-full bg-accent" />
+                  <div className="mt-5 flex flex-col items-center gap-1">
+                    <div className="inline-flex items-center gap-2 text-[11px] text-muted bg-surface2/60 ring-1 ring-border rounded-full px-3 py-1.5 max-w-full">
+                      <span className="status-dot h-1.5 w-1.5 rounded-full bg-accent flex-shrink-0" />
                       <span>Device ID</span>
-                      <span className="font-mono text-text/80 truncate max-w-[160px]">
+                      <span className="font-mono text-text/80 truncate min-w-0">
                         {deviceId()}
                       </span>
                     </div>
+                    <p className="text-[10px] text-muted text-center px-2 max-w-md">
+                      Tied to this address only:{" "}
+                      <span className="font-mono text-text/80">
+                        {typeof window !== "undefined" ? window.location.origin : ""}
+                      </span>
+                      . A different port = a different ID. Update the user in Prisma to match this exact
+                      ID, or run{" "}
+                      <span className="font-mono text-text/70">node scripts/set-device.cjs</span> from{" "}
+                      <span className="font-mono text-text/70">admin/backend</span>.
+                    </p>
                   </div>
                 </div>
 

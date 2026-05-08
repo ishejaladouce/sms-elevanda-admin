@@ -68,6 +68,7 @@ app.use((req, res) => {
 app.use((err, req, res, next) => {
   const status = err.status || 500;
   const message = err.message || "Server error";
-  return res.status(status).json({ success: false, message, data: null });
+  const data = err.data !== undefined ? err.data : null;
+  return res.status(status).json({ success: false, message, data });
 });
 

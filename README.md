@@ -82,7 +82,13 @@ The backend checks:
 
 2. **Copy the ID from the login page** you actually use, then set `User.deviceId` in Prisma Studio to that exact string (no extra spaces or line breaks).
 
-3. After editing in Prisma Studio, confirm `deviceId` in the table matches the login page character-for-character.
+3. **One database:** Client and admin backends often share the same `DATABASE_URL`. Run **Prisma Studio** from the **`backend/` folder of the API you are actually using** open `http://localhost:5001` so you edit the same database row the login request hits.
+
+4. **Use the script (reliable):** From `admin/backend` run  
+   `node scripts/set-device.cjs your@email.com <pasteDeviceIdFromLoginPage>`  
+   It trims whitespace and sets `isDeviceVerified` to true.
+
+5. **Development mode:** If `NODE_ENV=development`, a failed login response may include `data` with `storedLength` / `incomingLength` — if lengths differ, the DB value is not the string the browser sent.
 
 ## Helpful scripts (backend)
 Run scripts from `backend/`:
