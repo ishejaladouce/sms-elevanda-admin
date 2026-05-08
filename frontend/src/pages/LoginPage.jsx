@@ -9,7 +9,6 @@ import Logo from "../components/brand/Logo.jsx";
 import { api } from "../services/api.js";
 import { deviceId } from "../utils/device.js";
 import { useAuthStore } from "../store/authStore.js";
-import { useCountUp } from "../hooks/useCountUp.js";
 
 const schema = z.object({
   email: z.string().email("Enter a valid email"),
@@ -116,60 +115,32 @@ export default function LoginPage() {
               </p>
             </div>
 
-            {/* Bento metric tiles */}
+            {/* Feature tiles — what this console does */}
             <div className="grid grid-cols-2 gap-3 sm:gap-4 max-w-2xl">
-              <div onMouseMove={handleTileMouseMove} className="tile p-5 fade-up fade-up-delay-3">
-                <div className="text-[11px] uppercase tracking-wider text-muted">
-                  Students
-                </div>
-                <CountStat value={1284} className="mt-2 text-3xl sm:text-4xl font-semibold text-text tabular-nums" />
-                <MiniBars />
-              </div>
-
-              <div onMouseMove={handleTileMouseMove} className="tile p-5 fade-up fade-up-delay-4">
-                <div className="text-[11px] uppercase tracking-wider text-muted">
-                  Fees collected
-                </div>
-                <div className="mt-2 text-3xl sm:text-4xl font-semibold text-text tabular-nums">
-                  <CountStat value={42} suffix="M" />
-                  <span className="text-base text-muted ml-1.5 align-middle">RWF</span>
-                </div>
-                <div className="mt-3 h-1.5 rounded-full bg-surface2 overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-accent to-accentHover"
-                    style={{ width: "78%" }}
-                  />
-                </div>
-                <div className="mt-2 text-[11px] text-muted">78% of term target</div>
-              </div>
-
-              <div onMouseMove={handleTileMouseMove} className="tile p-5 fade-up fade-up-delay-5">
-                <div className="text-[11px] uppercase tracking-wider text-muted">
-                  Attendance today
-                </div>
-                <div className="mt-3 flex items-center gap-3">
-                  <RingChart percent={94} />
-                  <div>
-                    <div className="text-text text-2xl font-semibold tabular-nums">
-                      94<span className="text-muted text-base">%</span>
-                    </div>
-                    <div className="text-[11px] text-muted">Across 32 classes</div>
-                  </div>
-                </div>
-              </div>
-
-              <div onMouseMove={handleTileMouseMove} className="tile p-5 fade-up fade-up-delay-6">
-                <div className="text-[11px] uppercase tracking-wider text-muted">
-                  Pending verifications
-                </div>
-                <CountStat value={7} className="mt-2 text-3xl sm:text-4xl font-semibold text-text tabular-nums" />
-                <div className="mt-3 flex items-center gap-2 text-[11px] text-muted">
-                  <span className="inline-flex items-center gap-1.5">
-                    <span className="status-dot h-1.5 w-1.5 rounded-full bg-warning" />
-                    Awaiting your action
-                  </span>
-                </div>
-              </div>
+              <FeatureTile
+                icon={<ShieldIcon />}
+                title="Verify devices"
+                body="One tap unlocks a teacher's or parent's account on their device — secure by default."
+                delay="fade-up-delay-3"
+              />
+              <FeatureTile
+                icon={<CapIcon />}
+                title="Classes & teachers"
+                body="Build classes, assign teachers and keep schedules tidy without spreadsheets."
+                delay="fade-up-delay-4"
+              />
+              <FeatureTile
+                icon={<CalendarIcon />}
+                title="Attendance pulse"
+                body="See daily presence across every class in one calm, filterable view."
+                delay="fade-up-delay-5"
+              />
+              <FeatureTile
+                icon={<CoinsIcon />}
+                title="Money flow"
+                body="Every deposit, refund and balance — transparent across the whole school."
+                delay="fade-up-delay-6"
+              />
             </div>
           </aside>
 
@@ -266,60 +237,60 @@ export default function LoginPage() {
   );
 }
 
-// Animated counter for stat tiles.
-function CountStat({ value, suffix = "", className = "" }) {
-  const v = useCountUp(value, { duration: 1400, delay: 250 });
+// Feature tile shown on the marketing side of the login layout.
+function FeatureTile({ icon, title, body, delay = "" }) {
   return (
-    <span className={className}>
-      {Math.round(v).toLocaleString()}
-      {suffix}
-    </span>
-  );
-}
-
-// Small animated bar chart used in the Students tile.
-function MiniBars() {
-  const bars = [38, 56, 44, 72, 60, 84, 70];
-  return (
-    <div className="mt-3 flex items-end gap-1 h-10">
-      {bars.map((h, i) => (
-        <div
-          key={i}
-          className="flex-1 rounded-sm bg-gradient-to-t from-accent/30 to-accent bar-grow"
-          style={{ "--h": h / 100, animationDelay: `${300 + i * 60}ms`, height: `${h}%` }}
-        />
-      ))}
+    <div
+      onMouseMove={handleTileMouseMove}
+      className={`tile p-5 fade-up ${delay}`}
+    >
+      <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent/15 ring-1 ring-accent/25 text-accent">
+        {icon}
+      </span>
+      <div className="mt-4 font-display text-lg sm:text-xl tracking-tight text-text">
+        {title}
+      </div>
+      <p className="mt-1.5 text-xs sm:text-sm text-muted leading-relaxed">
+        {body}
+      </p>
     </div>
   );
 }
 
-// Animated ring chart for attendance percentage.
-function RingChart({ percent = 0 }) {
-  const radius = 22;
-  const circ = 2 * Math.PI * radius;
-  const off = circ - (percent / 100) * circ;
+function ShieldIcon() {
   return (
-    <svg width="56" height="56" viewBox="0 0 56 56" className="rotate-[-90deg]">
-      <circle
-        cx="28"
-        cy="28"
-        r={radius}
-        stroke="var(--color-border-strong)"
-        strokeWidth="5"
-        fill="none"
-      />
-      <circle
-        cx="28"
-        cy="28"
-        r={radius}
-        stroke="var(--color-accent)"
-        strokeWidth="5"
-        fill="none"
-        strokeLinecap="round"
-        strokeDasharray={circ}
-        style={{ "--circ": circ, "--off": off }}
-        className="ring-anim"
-      />
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      <path d="m9 12 2 2 4-4" />
+    </svg>
+  );
+}
+
+function CapIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 10 12 5 2 10l10 5 10-5z" />
+      <path d="M6 12v5c0 1.5 3 3 6 3s6-1.5 6-3v-5" />
+    </svg>
+  );
+}
+
+function CalendarIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <path d="M16 2v4M8 2v4M3 10h18" />
+      <path d="m8 14 2 2 4-4" />
+    </svg>
+  );
+}
+
+function CoinsIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <ellipse cx="12" cy="6" rx="8" ry="3" />
+      <path d="M4 6v6c0 1.66 3.58 3 8 3s8-1.34 8-3V6" />
+      <path d="M4 12v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6" />
     </svg>
   );
 }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import PageHeader from "../components/layout/PageHeader.jsx";
 import Button from "../components/ui/Button.jsx";
 import { api } from "../services/api.js";
@@ -227,8 +228,8 @@ function Snippet({ label, value }) {
 
 function ActionLink({ to, label }) {
   return (
-    <a
-      href={to}
+    <Link
+      to={to}
       className="group flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-control bg-surface2/60 ring-1 ring-border hover:ring-borderStrong hover:bg-surface2 text-sm text-text transition-all"
     >
       <span>{label}</span>
@@ -237,7 +238,7 @@ function ActionLink({ to, label }) {
           <path d="M5 12h14M13 5l7 7-7 7" />
         </svg>
       </span>
-    </a>
+    </Link>
   );
 }
 

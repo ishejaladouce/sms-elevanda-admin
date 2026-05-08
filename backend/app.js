@@ -41,7 +41,23 @@ app.get("/api/health", (req, res) => {
   return res.json({ success: true, message: "OK", data: null });
 });
 
-app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// Machine-readable OpenAPI spec (for Postman, codegen, CI checks).
+app.get("/api/openapi.json", (req, res) => {
+  res.setHeader("Content-Type", "application/json");
+  return res.json(swaggerSpec);
+});
+
+const swaggerUiOptions = {
+  customSiteTitle: "SMS Elevanda – Admin API",
+  swaggerOptions: {
+    persistAuthorization: false,
+    displayRequestDuration: true,
+    docExpansion: "list",
+    filter: true,
+  },
+};
+
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerUiOptions));
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 
